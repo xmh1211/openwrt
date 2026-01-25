@@ -1,0 +1,99 @@
+name: OpenWrt-CI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    name: 编译OpenWrt系统
+    steps:
+      - name: 在释放磁盘空间之前
+        run: |
+          echo "在释放磁盘空间之前"
+          echo "=============================================================================="
+          df -hT
+          echo "=============================================================================="
+        
+      - name: "优化磁盘空间"
+        uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
+        with:
+          operate_sudo: "True"
+          general_include: ".+"
+          general_exclude: |-
+            ^GCC$
+            ^G\+\+$
+            Clang
+            LLVM
+          docker_include: ".+"
+          docker_prune: "True"
+          docker_clean: "True"
+          apt_prune: "True"
+          apt_clean: "True"
+          homebrew_prune: "True"
+          homebrew_clean: "True"
+          npm_prune: "True"
+          npm_clean: "True"
+          os_swap: "True"
+        
+      - name: 释放磁盘空间
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 3072
+          swap-size-mb: 1
+          remove-dotnet: "true"
+          remove-android: "true"
+          remove-haskell: "true"
+          remove-codeql: "true"
+          remove-docker-images: "true"
+        
+      - name: 磁盘空间释放完成
+        run: |
+          echo "磁盘空间释放完成"
+          echo "=============================================================================="
+          df -hT
+          echo "=============================================================================="
+        
+      - name: 下载编译所需的依赖
+        run: |
+          sudo apt-get update -y
+          sudo apt-get full-upgrade -y
+          sudo apt-get -y install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
+            git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \
+            libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz \
+            genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils \
+            scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev \
+            ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt \
+            libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang \
+            perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev \
+            libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq
+        
+      - name: 克隆当前仓库
+        uses: actions/checkout@v4
+        
+      - name: 更新并下载软件包
+        run: |
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+        
+      - name: 更新默认配置文件
+        run: |
+          cp diffconfig .config
+          rm -rf diffconfig
+          make defconfig
+        
+      - name: 下载DL库
+        run: |
+          make download -j1 V=s
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+        
+      - name: 单线程编译
+        run: make -j1 V=s
+        
+      - name: 上传编译结果到 Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenWrt-build-result
+          path: ./bin/
