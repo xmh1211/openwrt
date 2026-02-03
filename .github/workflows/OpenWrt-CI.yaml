@@ -8,52 +8,7 @@ jobs:
     runs-on: ubuntu-22.04
     name: 编译OpenWrt系统
     steps:
-      - name: 在释放磁盘空间之前
-        run: |
-          echo "在释放磁盘空间之前"
-          echo "=============================================================================="
-          df -hT
-          echo "=============================================================================="
-        
-      - name: "优化磁盘空间"
-        uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
-        with:
-          operate_sudo: "True"
-          general_include: ".+"
-          general_exclude: |-
-            ^GCC$
-            ^G\+\+$
-            Clang
-            LLVM
-          docker_include: ".+"
-          docker_prune: "True"
-          docker_clean: "True"
-          apt_prune: "True"
-          apt_clean: "True"
-          homebrew_prune: "True"
-          homebrew_clean: "True"
-          npm_prune: "True"
-          npm_clean: "True"
-          os_swap: "True"
-        
-      - name: 释放磁盘空间
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 3072
-          swap-size-mb: 1
-          remove-dotnet: "true"
-          remove-android: "true"
-          remove-haskell: "true"
-          remove-codeql: "true"
-          remove-docker-images: "true"
-        
-      - name: 磁盘空间释放完成
-        run: |
-          echo "磁盘空间释放完成"
-          echo "=============================================================================="
-          df -hT
-          echo "=============================================================================="
-        
+
       - name: 下载编译所需的依赖
         run: |
           sudo apt-get update -y
