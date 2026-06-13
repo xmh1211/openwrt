@@ -22,10 +22,10 @@ jobs:
             ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt \
             libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang \
             perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev \
-            libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq
+            libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq xsltproc golang
         
       - name: 克隆当前仓库
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         
       - name: 更新并下载软件包
         run: |
@@ -48,7 +48,7 @@ jobs:
         run: make -j1 V=s
         
       - name: 上传编译结果到 Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: OpenWrt-build-result
           path: ./bin/
