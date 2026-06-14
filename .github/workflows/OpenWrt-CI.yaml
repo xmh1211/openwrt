@@ -27,9 +27,16 @@ jobs:
       - name: 克隆当前仓库
         uses: actions/checkout@v6
         
-      - name: 更新并下载软件包
+      - name: 更新软件包
         run: |
           ./scripts/feeds update -a
+
+      - name: 将“终端”插件的位置从“服务”菜单移动到“系统”菜单
+        run: |
+          sed -i 's|admin/services|admin/system|g' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
+
+      - name: 下载软件包
+        run: |
           ./scripts/feeds install -a
         
       - name: 更新默认配置文件
