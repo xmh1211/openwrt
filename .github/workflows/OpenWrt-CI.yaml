@@ -47,12 +47,12 @@ jobs:
         
       - name: 下载DL库
         run: |
-          make download -j1 V=s
+          make download -j8
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
         
-      - name: 单线程编译
-        run: make -j1 V=s
+      - name: 多线程编译
+        run: make V=s -j$(nproc)
         
       - name: 上传编译结果到 Artifact
         uses: actions/upload-artifact@v7
