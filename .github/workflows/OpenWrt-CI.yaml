@@ -56,7 +56,11 @@ jobs:
           cp diffconfig .config
           rm -rf diffconfig
           make defconfig
-        
+
+      - name: 跳过shadowsocksr-libev的哈希值验证
+        run: |
+          sed -i 's/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' feeds/passwall_packages/shadowsocksr-libev/Makefile
+
       - name: 下载DL库
         run: |
           make download -j16
