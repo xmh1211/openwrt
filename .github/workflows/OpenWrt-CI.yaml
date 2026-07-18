@@ -37,9 +37,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: 可用磁盘空间
-        uses: jlumbroso/free-disk-space@main
+        uses: jlumbroso/free-disk-space@v1.3.1
         with:
-          tool-cache: true
+          tool-cache: false
           android: true
           dotnet: true
           haskell: true
