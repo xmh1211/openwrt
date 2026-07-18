@@ -26,21 +26,17 @@ jobs:
       - name: 克隆当前仓库
         uses: actions/checkout@v6
 
-      - name: 可用磁盘空间（Ubuntu）
+      - name: 可用磁盘空间
         uses: jlumbroso/free-disk-space@main
         with:
-          # this might remove tools that are actually needed,
-          # if set to "true" but frees about 6 GB
           tool-cache: true
-          # all of these default to true, but feel free to set to
-          # "false" if necessary for your workflow
           android: true
           dotnet: true
           haskell: true
           large-packages: true
           swap-storage: true
         
-      - name: 更新软件包
+      - name: 添加并更新软件包
         run: |
           sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
           sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
@@ -62,15 +58,44 @@ jobs:
         
       - name: 下载DL库
         run: |
-          make download -j8
+          make download -j16
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
-        
-      - name: 多线程编译
-        run: make -j$(nproc) || make -j1 V=s
-        
-      - name: 上传编译结果到 Artifact
+
+      - name: 编译固件
+        run: |
+          make -j$(nproc) || make -j1 V=s
+          echo "======================="
+          echo "Space usage:"
+          echo "======================="
+          df -h
+          echo "======================="
+          du -h --max-depth=1 ./ --exclude=build_dir --exclude=bin
+          du -h --max-depth=1 ./build_dir
+          du -h --max-depth=1 ./bin
+
+      - name: 准备构件
+        run: |
+          mkdir -p ./artifact/package
+          mkdir -p ./artifact/buildinfo
+          rm -rf $(find ./bin/targets/ -type d -name "packages")
+          cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
+          cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
+
+      - name: 上传构建信息
         uses: actions/upload-artifact@v7
         with:
-          name: OpenWrt-build-result
-          path: ./bin/
+          name: OpenWrt_buildinfo
+          path: ./artifact/buildinfo/
+
+      - name: 上传软件包
+        uses: actions/upload-artifact@v7
+        with:
+          name: OpenWrt_package
+          path: ./artifact/package/
+
+      - name: 上传固件包
+        uses: actions/upload-artifact@v7
+        with:
+          name: OpenWrt_firmware
+          path: ./bin/targets/
