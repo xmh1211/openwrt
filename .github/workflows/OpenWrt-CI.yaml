@@ -14,13 +14,23 @@ jobs:
           docker image prune -f
           sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
           sudo -E apt-mark hold grub-efi-amd64-signed
-          sudo -E apt update
-          sudo -E apt -y purge azure-cli* docker* ghc* zulu* llvm* firefox google* dotnet* powershell* openjdk* mysql* php* mongodb* dotnet* snap*
-          sudo -E apt -y full-upgrade
-          sudo -E apt -y install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq xsltproc golang
+          sudo -E apt-get update
+          sudo -E apt-get -y purge azure-cli* docker* ghc* zulu* llvm* firefox google* dotnet* powershell* openjdk* mysql* php* mongodb* dotnet* snap*
+          sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
+            git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \
+            libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz \
+            genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils \
+            scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev \
+            ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt \
+            libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang \
+            perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev \
+            libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq xsltproc \
+            golang libev-dev libsodium-dev libpcre3-dev
           sudo -E systemctl daemon-reload
-          sudo -E apt -y autoremove --purge
-          sudo -E apt clean
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
           sudo -E timedatectl set-timezone "Asia/Shanghai"
         
       - name: 克隆当前仓库
