@@ -95,7 +95,7 @@ jobs:
       run: |
           make -j$(nproc) || { make -j1 V=s; }
 
-    - name: Upload firmware
+    - name: 上传固件
       uses: actions/upload-artifact@v7
       with:
           name: OpenWrt_firmware
