@@ -11,14 +11,14 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - name: Before freeing up disk space
+    - name: 在释放磁盘空间之前
       run: |
-        echo "Before freeing up disk space"
+        echo "在释放磁盘空间之前"
         echo "=============================================================================="
         df -hT
         echo "=============================================================================="
 
-    - name: Optimize Disk Space
+    - name: 优化磁盘空间
       uses: hugoalh/disk-space-optimizer-ghaction@v0.8.1
       with:
         operate_sudo: "True"
@@ -35,14 +35,14 @@ jobs:
         npm_clean: "True"
         os_swap: "True"
 
-    - name: Free up disk space complete
+    - name: 磁盘空间释放完成
       run: |
-        echo "Free up disk space complete"
+        echo "磁盘空间释放完成"
         echo "=============================================================================="
         df -hT
         echo "=============================================================================="
 
-    - name: Initialization environment
+    - name: 初始化环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -57,7 +57,7 @@ jobs:
         sudo -E apt-get -qq clean
         sudo -E timedatectl set-timezone "Asia/Shanghai"
 
-    - name: Checkout Code
+    - name: 拉取当前仓库
       uses: actions/checkout@v7
 
     - name: 添加并更新软件包
@@ -90,7 +90,7 @@ jobs:
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
 
-    - name: Compile firmware
+    - name: 编译固件
       run: |
           make -j$(nproc) || { make -j1 V=s; }
 
