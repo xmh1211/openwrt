@@ -1,18 +1,13 @@
-# 
-# <https://github.com/KFERMercer/OpenWrt-CI>
-#
-# Copyright (C) 2019 P3TERX
-#
-# Copyright (C) 2020 KFERMercer
-#
-name: OpenWrt-CI
-
 on:
+  # schedule:
+  #   - cron: '0 16 * * *'
+  repository_dispatch:
   workflow_dispatch:
 
 jobs:
-  build_openwrt:
+  build:
     runs-on: ubuntu-22.04
+
     steps:
     - name: Before freeing up disk space
       run: |
@@ -21,16 +16,12 @@ jobs:
         df -hT
         echo "=============================================================================="
 
-    - name: "Optimize Disk Space"
-      uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
+    - name: Optimize Disk Space
+      uses: hugoalh/disk-space-optimizer-ghaction@v0.8.1
       with:
         operate_sudo: "True"
         general_include: ".+"
-        general_exclude: |-
-          ^GCC$
-          ^G\+\+$
-          Clang
-          LLVM
+        general_exclude: "^GCC$|^G\\+\\+$|Clang|LLVM"
         docker_include: ".+"
         docker_prune: "True"
         docker_clean: "True"
@@ -44,7 +35,7 @@ jobs:
 
     - name: Freeing up disk space
       uses: easimon/maximize-build-space@master
-      with: 
+      with:
         root-reserve-mb: 2048
         swap-size-mb: 1
         remove-dotnet: 'true'
@@ -59,6 +50,9 @@ jobs:
         echo "=============================================================================="
         df -hT
         echo "=============================================================================="
+
+    - name: Checkout
+      uses: actions/checkout@main
 
     - name: Initialization environment
       env:
@@ -81,7 +75,6 @@ jobs:
         sudo rm -rf /etc/apt/sources.list.d/* /usr/local/lib/android /opt/ghc /usr/share/dotnet /usr/local/graalvm /usr/local/.ghcup \
         /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/node_modules
         sudo timedatectl set-timezone "$TZ"
-        sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
 
     - name: Checkout Code
       uses: actions/checkout@v6
