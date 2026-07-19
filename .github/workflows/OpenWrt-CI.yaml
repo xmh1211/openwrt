@@ -42,9 +42,6 @@ jobs:
         df -hT
         echo "=============================================================================="
 
-    - name: Checkout
-      uses: actions/checkout@main
-
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -68,7 +65,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
 
     - name: Checkout Code
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: 添加并更新软件包
       run: |
