@@ -76,13 +76,13 @@ jobs:
 
       - name: 下载DL库
         run: |
-          make download -j16
+          make download -j1 V=s
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
 
       - name: Compile firmware
         run: |
-          make -j$(nproc) || make -j1 V=s
+          make -j1 V=s
           echo "======================="
           echo "Space usage:"
           echo "======================="
