@@ -12,80 +12,112 @@ on:
 
 jobs:
   build_openwrt:
-    name: Build OpenWrt Firmware
     runs-on: ubuntu-22.04
     steps:
-      - name: Maximize build space
-        uses: easimon/maximize-build-space@master
-        with:
-          root-reserve-mb: 'true'
-          temp-reserve-mb: 'true'
-          swap-size-mb: 'true'
-          overprovision-lvm: 'true'
-          build-mount-path: 'true'
-          pv-loop-path: 'true'
-          tmp-pv-loop-path: 'true'
-          remove-dotnet: 'true'
-          remove-android: 'true'
-          remove-haskell: 'true'
-          remove-codeql: 'true'
-          remove-docker-images: 'true'
+    - name: Before freeing up disk space
+      run: |
+        echo "Before freeing up disk space"
+        echo "=============================================================================="
+        df -hT
+        echo "=============================================================================="
 
-      - name: Space cleanup and Initialization environment
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: |
-          sudo -E apt-get update
-          sudo -E apt-get -y install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential \
-            bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
-            git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \
-            libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz \
-            genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils \
-            scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev \
-            ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt \
-            libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang \
-            perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev \
-            libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq xsltproc \
-            golang libev-dev libsodium-dev libpcre3-dev
-          sudo -E apt-get -y autoremove --purge
-          sudo -E apt-get clean
-          sudo -E timedatectl set-timezone "Asia/Shanghai"
+    - name: "Optimize Disk Space"
+      uses: "hugoalh/disk-space-optimizer-ghaction@v0.8.1"
+      with:
+        operate_sudo: "True"
+        general_include: ".+"
+        general_exclude: |-
+          ^GCC$
+          ^G\+\+$
+          Clang
+          LLVM
+        docker_include: ".+"
+        docker_prune: "True"
+        docker_clean: "True"
+        apt_prune: "True"
+        apt_clean: "True"
+        homebrew_prune: "True"
+        homebrew_clean: "True"
+        npm_prune: "True"
+        npm_clean: "True"
+        os_swap: "True"
 
-      - name: Checkout
-        uses: actions/checkout@v6
+    - name: Freeing up disk space
+      uses: easimon/maximize-build-space@master
+      with: 
+        root-reserve-mb: 2048
+        swap-size-mb: 1
+        remove-dotnet: 'true'
+        remove-android: 'true'
+        remove-haskell: 'true'
+        remove-codeql: 'true'
+        remove-docker-images: 'true'
 
-      - name: 添加并更新软件包
-        run: |
+    - name: Free up disk space complete
+      run: |
+        echo "Free up disk space complete"
+        echo "=============================================================================="
+        df -hT
+        echo "=============================================================================="
+
+    - name: Checkout Code
+      uses: actions/checkout@v6
+
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install ack antlr3 aria2 asciidoc autoconf automake autopoint binutils bison build-essential \
+        bzip2 ccache cmake cpio curl device-tree-compiler fastjar flex gawk gettext gcc-multilib g++-multilib \
+        git gperf haveged help2man intltool libc6-dev-i386 libelf-dev libglib2.0-dev libgmp3-dev libltdl-dev \
+        libmpc-dev libmpfr-dev libncurses5-dev libncursesw5-dev libreadline-dev libssl-dev libtool lrzsz \
+        genisoimage msmtp nano ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip libpython3-dev qemu-utils \
+        scons squashfs-tools subversion swig texinfo uglifyjs upx-ucl unzip vim wget xmlto xxd zlib1g-dev \
+        ecj file g++ java-propose-classpath python3-distutils python3-setuptools python3-dev rsync time quilt \
+        libtool-bin gettext-base dos2unix python3-pyelftools libnsl-dev llvm libfuse-dev genisoimage clang \
+        perl zlib1g-dev libc6-dev grep diffutils moreutils gnutls-dev lib32gcc-s1 libncurses-dev libyaml-dev \
+        libz-dev lld mkisofs msmtp python3-ply python3-docutils re2c zstd duf clang-15 llvm-15 npm jq xsltproc \
+        golang libev-dev libsodium-dev libpcre3-dev
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/local/lib/android /opt/ghc /usr/share/dotnet /usr/local/graalvm /usr/local/.ghcup \
+        /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/node_modules
+        sudo timedatectl set-timezone "$TZ"
+        sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
+
+    - name: 添加并更新软件包
+      run: |
           sed -i '1i src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
           sed -i '2i src-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
           ./scripts/feeds update -a
 
-      - name: 将“终端”插件的位置从“服务”菜单移动到“系统”菜单
-        run: |
+    - name: 将“终端”插件的位置从“服务”菜单移动到“系统”菜单
+      run: |
           sed -i 's|admin/services|admin/system|g' feeds/luci/applications/luci-app-ttyd/root/usr/share/luci/menu.d/luci-app-ttyd.json
 
-      - name: 下载软件包
-        run: |
+    - name: 下载软件包
+      run: |
           ./scripts/feeds install -a
 
-      - name: 更新默认配置文件
-        run: |
+    - name: 更新默认配置文件
+      run: |
           cp diffconfig .config
           rm -rf diffconfig
           make defconfig
 
-      - name: 跳过shadowsocksr-libev的哈希值验证
-        run: |
+    - name: 跳过shadowsocksr-libev的哈希值验证
+      run: |
           sed -i 's/PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' feeds/passwall_packages/shadowsocksr-libev/Makefile
 
-      - name: 下载DL库
-        run: |
+    - name: 下载DL库
+      run: |
           make download -j1 V=s
           find dl -size -1024c -exec ls -l {} \;
           find dl -size -1024c -exec rm -f {} \;
 
-      - name: Compile firmware
-        run: |
+    - name: Compile firmware
+      run: |
           make -j1 V=s
           echo "======================="
           echo "Space usage:"
@@ -96,28 +128,28 @@ jobs:
           du -h --max-depth=1 ./build_dir
           du -h --max-depth=1 ./bin
 
-      - name: Prepare artifact
-        run: |
+    - name: Prepare artifact
+      run: |
           mkdir -p ./artifact/package
           mkdir -p ./artifact/buildinfo
           rm -rf $(find ./bin/targets/ -type d -name "packages")
           cp -rf $(find ./bin/packages/ -type f -name "*.ipk") ./artifact/package/
           cp -rf $(find ./bin/targets/ -type f -name "*.buildinfo" -o -name "*.manifest") ./artifact/buildinfo/
 
-      - name: Upload buildinfo
-        uses: actions/upload-artifact@v7
-        with:
+    - name: Upload buildinfo
+      uses: actions/upload-artifact@v7
+      with:
           name: OpenWrt_buildinfo
           path: ./artifact/buildinfo/
 
-      - name: Upload package
-        uses: actions/upload-artifact@v7
-        with:
+    - name: Upload package
+      uses: actions/upload-artifact@v7
+      with:
           name: OpenWrt_package
           path: ./artifact/package/
 
-      - name: Upload firmware
-        uses: actions/upload-artifact@v7
-        with:
+    - name: Upload firmware
+      uses: actions/upload-artifact@v7
+      with:
           name: OpenWrt_firmware
           path: ./bin/targets/
