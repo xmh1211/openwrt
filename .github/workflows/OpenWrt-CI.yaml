@@ -60,9 +60,6 @@ jobs:
         df -hT
         echo "=============================================================================="
 
-    - name: Checkout Code
-      uses: actions/checkout@v6
-
     - name: Initialization environment
       env:
         DEBIAN_FRONTEND: noninteractive
@@ -85,6 +82,9 @@ jobs:
         /usr/local/share/powershell /usr/local/share/chromium /usr/local/lib/node_modules
         sudo timedatectl set-timezone "$TZ"
         sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
+
+    - name: Checkout Code
+      uses: actions/checkout@v6
 
     - name: 添加并更新软件包
       run: |
