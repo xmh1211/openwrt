@@ -29,7 +29,6 @@ jobs:
           echo "Free space:"
           df -h
 
-    steps:
       - name: Space cleanup and Initialization environment
         env:
           DEBIAN_FRONTEND: noninteractive
